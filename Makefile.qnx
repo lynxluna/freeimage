@@ -1,5 +1,5 @@
-# Configuration for iPhone OS, making static libs
-# this will generate both iPhone (arm) and iPhoneSimulator (i686) libs
+# Configuration for QNX OS, making static libs
+# this will generate both QNX (arm) and QNX Simulator (i686) libs
 
 
 include Makefile.srcs
