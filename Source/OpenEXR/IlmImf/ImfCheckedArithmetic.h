@@ -45,6 +45,11 @@
 #include <limits>
 #include <IexMathExc.h>
 
+#if !defined(size_t) && defined(__QNXNTO__)
+#include <cstddef>
+using std::size_t;
+#endif
+
 namespace Imf {
 
 template <bool b> struct StaticAssertionFailed;

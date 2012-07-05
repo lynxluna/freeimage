@@ -621,8 +621,8 @@ void throwErrnoExc (const std::string &text, int errnum)
       #endif
 
       #if defined (EALREADY)
-	  case EALREADY:
-	    throw EalreadyExc (tmp);
+	  //case EALREADY:
+	    //throw EalreadyExc (tmp);
       #endif
 
       #if defined (EINPROGRESS)
