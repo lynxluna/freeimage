@@ -1,0 +1,85 @@
+# Configuration for iPhone OS, making static libs
+# this will generate both iPhone (arm) and iPhoneSimulator (i686) libs
+
+
+include Makefile.srcs
+
+CFLAGS =  -g -O2 -Wmissing-prototypes -D_FORTIFY_SOURCE=2 -ffast-math -fno-strict-aliasing 
+CXXFLAGS =  -g -O2 -fno-strict-aliasing -D_FORTIFY_SOURCE=2 
+
+WARNING_FLAGS = 
+
+PLATFORM_FLAGS = -D__QNX__ -D__QNXNTO__ -I$(QNX_TARGET)/usr/include
+
+FLAG_SIM = -Vgcc_ntox86_gpp
+FLAG_DEVICE = -Vgcc_ntoarmv7le_gpp
+
+BASE_CC = $(QNX_HOST)/usr/bin/qcc
+BASE_CXX = $(QNX_HOST)/usr/bin/QCC
+
+OPENEXR_INCLUDES = -ISource/OpenEXR/IlmImf/ -ISource/OpenEXR/Imath -ISource/OpenEXR/Iex -ISource/OpenEXR/Half -ISource/OpenEXR/IlmThread -ISource/OpenEXR
+
+LIBRAWLITE_INCLUDES = -ISource/LibRawLite
+
+AR_SIM = ntox86-ar cqs
+AR_DEVICE = ntoarmv7-ar cqs
+
+EXTRA_CFLAGS = -I$(QNX_TARGET)/usr/include -I$(QNX_TARGET)/usr/include/cpp/c -I$(QNX_TARGET)/usr/include/cpp -ISource -Wunused-variable $(OPENEXR_INCLUDES) $(LIBRAWLITE_INCLUDES) 
+
+CFLAGS_SIM = $(CFLAGS) $(PLATFORM_FLAGS) $(EXTRA_CFLAGS) $(WARNING_FLAGS)
+CFLAGS_DEVICE = $(CFLAGS_SIM)
+
+CXXFLAGS_SIM = $(CXXFLAGS) $(PLATFORM_FLAGS) $(EXTRA_CFLAGS) $(WARNING_FLAGS)
+CXXFLAGS_DEVICE= $(CXXFLAGS_SIM)
+
+EXTRA_CFLAGS_SIM = 
+EXTRA_LDFLAGS_SIM = 
+
+EXTRA_CFLAGS_DEVICE = 
+EXTRA_LDFLAGS_DEVICE =
+
+CC_SIM = $(BASE_CC) $(FLAG_SIM)
+CC_DEVICE = $(BASE_CC) $(FLAG_DEVICE)
+CXX_SIM = $(BASE_CXX) $(FLAG_SIM)
+CXX_DEVICE = $(BASE_CXX) $(FLAG_DEVICE)
+TARGET = freeimage
+STATICLIB_SIM = lib$(TARGET)-x86.a
+STATICLIB_DEVICE = lib$(TARGET)-armv7.a
+HEADER = Source/FreeImage.h
+
+.SUFFIXES: .o-i686 .o-arm
+MODULES_ARM = $(SRCS:.c=.o-arm)
+MODULES_ARM := $(MODULES_ARM:.cpp=.o-arm)
+MODULES_i686 = $(SRCS:.c=.o-i686)
+MODULES_i686 := $(MODULES_i686:.cpp=.o-i686)
+
+default: all
+
+all: dist
+
+dist: FreeImage
+	cp *.a Dist
+	cp Source/FreeImage.h Dist
+
+FreeImage: $(STATICLIB_SIM) $(STATICLIB_DEVICE)
+
+$(STATICLIB_SIM): $(MODULES_i686)
+	$(AR_SIM) -o $@ $(MODULES_i686)
+
+.c.o-i686:
+	$(CC_SIM) $(CFLAGS_SIM) -c $< -o $@
+
+.cpp.o-i686:
+	$(CXX_SIM) $(CXXFLAGS_SIM) -c $< -o $@
+
+$(STATICLIB_DEVICE): $(MODULES_ARM)
+	$(AR_DEVICE) -o $@ $(MODULES_ARM)
+
+.c.o-arm:
+	$(CC_DEVICE) $(CFLAGS_DEVICE) -c $< -o $@
+
+.cpp.o-arm:
+	$(CXX_DEVICE) $(CXXFLAGS_DEVICE) -c $< -o $@
+
+clean:
+	rm -f core Dist/*.* u2dtmp* $(MODULES_i686) $(MODULES_ARM) $(STATICLIB_SIM) $(STATICLIB_DEVICE)
